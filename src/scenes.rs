@@ -2,7 +2,6 @@ use sfml::graphics::*;
 use sfml::window::*;
 use std::option::Option;
 
-
 pub enum State {
     MENU,
     GAME,

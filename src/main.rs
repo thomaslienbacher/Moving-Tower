@@ -2,12 +2,12 @@ extern crate sfml;
 
 mod utils;
 mod scenes;
+mod ui;
 
 use sfml::graphics::*;
 use sfml::system::*;
 use sfml::window::*;
 use scenes::{MenuScene, Scene, State};
-use std::boxed::Box;
 
 const WIN_SIZE: (u32, u32) = (800, 600);
 
@@ -27,7 +27,6 @@ fn main() {
     //scenes
     let mut menuscene =  MenuScene::new();
     let mut curscene = &mut menuscene as &mut Scene;
-
 
     while window.is_open() {
         let delta = clock.restart().as_seconds();
