@@ -12,8 +12,7 @@ pub fn get_path(path: &str) -> String {
                 }
             }
             Err(err) => {
-                eprintln!("{}", err);
-                String::new()
+                panic!("{}", err);
             }
         }
     };
