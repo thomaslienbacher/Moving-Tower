@@ -1,6 +1,8 @@
 use sfml::graphics::*;
 use sfml::window::*;
 use std::option::Option;
+use ui::UiButton;
+use utils::get_path;
 
 pub enum State {
     MENU,
@@ -10,33 +12,46 @@ pub enum State {
 pub trait Scene {
     fn update(&mut self, d: f32) -> Option<State>; //returns the new state if we need to change
 
-    fn draw(&mut self, win: &mut RenderWindow);
+    fn draw(&self, win: &mut RenderWindow);
 
     fn events(&mut self, evt: Event);
 }
 
-pub struct MenuScene {
-    d: f64
+pub struct MenuScene<'a> {
+    play_button: UiButton<'a>
 }
 
-impl MenuScene {
-    pub fn new() -> MenuScene {
-        MenuScene { d: 0.0 }
+impl<'a> MenuScene<'a> {
+    pub fn new(font: &'a Font) -> MenuScene<'a> {
+        let pb = UiButton::new(&font)
+            .size(100, 100, 200, 50)
+            .color(&Color::WHITE)
+            .border_color(&Color::BLACK)
+            .border_thickness(3.0)
+            .text("PLAY")
+            .char_size(32)
+            .text_color(&Color::BLACK)
+            .pack();
+
+
+        MenuScene { play_button: pb }
     }
 }
 
-impl Scene for MenuScene {
-    fn update(&mut self, d: f32) -> Option<State> {
-        println!("{}", d);
+impl<'a> Scene for MenuScene<'a> {
+    fn update(&mut self, _d: f32) -> Option<State> {
+        if self.play_button.clicked() {
+            println!("play button was clicked!");
+        }
 
         None
     }
 
-    fn draw(&mut self, win: &mut RenderWindow) {
-
+    fn draw(&self, win: &mut RenderWindow) {
+        self.play_button.draw(win);
     }
 
     fn events(&mut self, evt: Event) {
-
+        self.play_button.event(evt);
     }
 }

@@ -8,6 +8,7 @@ use sfml::graphics::*;
 use sfml::system::*;
 use sfml::window::*;
 use scenes::{MenuScene, Scene, State};
+use utils::get_path;
 
 const WIN_SIZE: (u32, u32) = (800, 600);
 
@@ -21,12 +22,20 @@ fn main() {
 
     window.set_framerate_limit(60);
 
+    let font = {
+        if let Some(f) = Font::from_file(get_path("resources/consolas.ttf").as_str()) {
+            f
+        } else {
+            panic!("Couldn't load font");
+        }
+    };
+
     let mut clock = Clock::default();
-    let mut gamestate = State::MENU;
+    let _gamestate = State::MENU;
 
     //scenes
-    let mut menuscene =  MenuScene::new();
-    let mut curscene = &mut menuscene as &mut Scene;
+    let mut menuscene = MenuScene::new(&font);
+    let curscene = &mut menuscene as &mut Scene;
 
     while window.is_open() {
         let delta = clock.restart().as_seconds();
@@ -36,7 +45,9 @@ fn main() {
             match ev {
                 Event::Closed => { window.close() }
                 Event::
-                KeyPressed { code, .. } => {
+                KeyPressed {
+                    code, ..
+                } => {
                     match code {
                         Key::Escape => { window.close() }
                         _ => {}
@@ -48,7 +59,7 @@ fn main() {
             curscene.events(ev);
         }
 
-        window.clear(&Color::from(0x1AA177));
+        window.clear(&Color::from(0x99CC77));
 
         curscene.draw(&mut window);
 
