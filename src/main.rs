@@ -7,10 +7,13 @@ mod ui;
 use sfml::graphics::*;
 use sfml::system::*;
 use sfml::window::*;
-use scenes::{MenuScene, Scene, State};
+use scenes::*;
 use utils::get_path;
+use std::boxed::Box;
 
-const WIN_SIZE: (u32, u32) = (800, 600);
+const WIN_SIZE: (u32, u32) = (1000, 600);
+const WIN_WIDTH: f32 = WIN_SIZE.0 as f32;
+const WIN_HEIGHT: f32 = WIN_SIZE.1 as f32;
 
 fn main() {
     let mut window = RenderWindow::new(
@@ -31,15 +34,24 @@ fn main() {
     };
 
     let mut clock = Clock::default();
-    let _gamestate = State::MENU;
-
-    //scenes
-    let mut menuscene = MenuScene::new(&font);
-    let curscene = &mut menuscene as &mut Scene;
+    let mut curscene: Box<Scene> = Box::new(MenuScene::new(&font)) as Box<Scene>;
 
     while window.is_open() {
         let delta = clock.restart().as_seconds();
-        curscene.update(delta);
+
+        if let Some(s) = curscene.update(delta) {
+            match s {
+                State::Menu => {
+                    curscene = Box::new(MenuScene::new(&font)) as Box<Scene>;
+                }
+                State::Game => {
+                    curscene = Box::new(GameScene::new()) as Box<Scene>;
+                }
+                State::Exit => {
+                    window.close()
+                }
+            }
+        }
 
         while let Some(ev) = window.poll_event() {
             match ev {

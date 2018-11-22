@@ -2,11 +2,13 @@ use sfml::graphics::*;
 use sfml::window::*;
 use std::option::Option;
 use ui::UiButton;
-use utils::get_path;
+use super::{WIN_WIDTH, WIN_HEIGHT};
 
+#[derive(Eq, PartialEq)]
 pub enum State {
-    MENU,
-    GAME,
+    Menu,
+    Game,
+    Exit,
 }
 
 pub trait Scene {
@@ -18,30 +20,45 @@ pub trait Scene {
 }
 
 pub struct MenuScene<'a> {
-    play_button: UiButton<'a>
+    play_button: UiButton<'a>,
+    exit_button: UiButton<'a>,
 }
 
 impl<'a> MenuScene<'a> {
     pub fn new(font: &'a Font) -> MenuScene<'a> {
-        let pb = UiButton::new(&font)
-            .size(100, 100, 200, 50)
+        let play_button = UiButton::new(&font)
+            .bounds(WIN_WIDTH / 2.0 - 200.0, WIN_HEIGHT / 2.0, 400.0, 70.0)
             .color(Color::WHITE)
             .border_color(Color::BLACK)
             .border_thickness(3.0)
             .text("PLAY")
-            .char_size(32)
+            .char_size(42)
+            .text_color(Color::BLACK)
+            .pack();
+
+        let exit_button = UiButton::new(&font)
+            .bounds(WIN_WIDTH / 2.0 - 200.0, WIN_HEIGHT / 2.0 + 120.0, 400.0, 70.0)
+            .color(Color::WHITE)
+            .border_color(Color::BLACK)
+            .border_thickness(3.0)
+            .text("EXIT")
+            .char_size(42)
             .text_color(Color::BLACK)
             .pack();
 
 
-        MenuScene { play_button: pb }
+        MenuScene { play_button, exit_button }
     }
 }
 
 impl<'a> Scene for MenuScene<'a> {
     fn update(&mut self, _d: f32) -> Option<State> {
         if self.play_button.clicked() {
-            println!("play button was clicked!");
+            return Some(State::Game);
+        }
+
+        if self.exit_button.clicked() {
+            return Some(State::Exit);
         }
 
         None
@@ -49,9 +66,31 @@ impl<'a> Scene for MenuScene<'a> {
 
     fn draw(&self, win: &mut RenderWindow) {
         self.play_button.draw(win);
+        self.exit_button.draw(win);
     }
 
     fn events(&mut self, evt: Event) {
         self.play_button.event(evt);
+        self.exit_button.event(evt);
     }
+}
+
+pub struct GameScene {}
+
+impl GameScene {
+    pub fn new() -> GameScene {
+        GameScene {}
+    }
+}
+
+impl Scene for GameScene {
+    fn update(&mut self, d: f32) -> Option<State> {
+        println!("game: {}", d);
+
+        None
+    }
+
+    fn draw(&self, win: &mut RenderWindow) {}
+
+    fn events(&mut self, evt: Event) {}
 }
