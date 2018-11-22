@@ -9,8 +9,13 @@ pub struct UiButton<'a> {
     text: Text<'a>,
     rect: IntRect,
     clicked: bool,
-    down: bool, //whether the button is down or not
+    down: bool,
+    fill_color: Color,
+    border_color: Color,
 }
+
+const DOWN_SCALE: f32 = 0.97;
+const DARKENING_SCALE: f32 = 0.9;
 
 impl<'a> UiButton<'a> {
     pub fn new(font: &'a Font) -> UiButton<'a> {
@@ -20,6 +25,8 @@ impl<'a> UiButton<'a> {
             rect: IntRect::default(),
             clicked: false,
             down: false,
+            fill_color: Color::WHITE,
+            border_color: Color::BLACK,
         }
     }
 
@@ -29,13 +36,13 @@ impl<'a> UiButton<'a> {
         self
     }
 
-    pub fn color(mut self, color: &Color) -> Self {
-        self.shape.set_fill_color(color);
+    pub fn color(mut self, color: Color) -> Self {
+        self.fill_color = color;
         self
     }
 
-    pub fn border_color(mut self, color: &Color) -> Self {
-        self.shape.set_outline_color(color);
+    pub fn border_color(mut self, color: Color) -> Self {
+        self.border_color = color;
         self
     }
 
@@ -54,12 +61,15 @@ impl<'a> UiButton<'a> {
         self
     }
 
-    pub fn text_color(mut self, color: &Color) -> Self {
-        self.text.set_fill_color(color);
+    pub fn text_color(mut self, color: Color) -> Self {
+        self.text.set_fill_color(&color);
         self
     }
 
     pub fn pack(mut self) -> Self {
+        self.shape.set_fill_color(&self.fill_color);
+        self.shape.set_outline_color(&self.border_color);
+
         let pos = {
             let x = self.rect.left as f32
                 + self.rect.width as f32 / 2.0
@@ -80,7 +90,7 @@ impl<'a> UiButton<'a> {
             Vector2f::new(x, y)
         };
         self.shape.set_origin(org);
-        self.shape.set_position(Vector2f::new(self.rect.left as f32 + org.x, self.rect.top as f32 + org.y,));
+        self.shape.set_position(Vector2f::new(self.rect.left as f32 + org.x, self.rect.top as f32 + org.y));
 
         self
     }
@@ -104,8 +114,8 @@ impl<'a> UiButton<'a> {
         match evt {
             Event::MouseButtonPressed { button: Button::Left, x, y } => {
                 if self.rect.contains2(x, y) {
+                    self.shape.set_scale(Vector2f::new(DOWN_SCALE, DOWN_SCALE));
                     self.down = true;
-                    self.shape.set_scale(Vector2f::new(0.95, 0.95));//TODO: constify
                 }
             }
             Event::MouseButtonReleased { button: Button::Left, x, y } => {
@@ -113,8 +123,35 @@ impl<'a> UiButton<'a> {
                     self.clicked = true;
                 }
 
-                self.down = false;
                 self.shape.set_scale(Vector2f::new(1.0, 1.0));
+                self.down = false;
+            }
+            Event::MouseMoved { x, y } => {
+                if self.rect.contains2(x, y) {
+                    let fc = {
+                        let mut c = self.fill_color.clone();
+                        c.r = (c.r as f32 * DARKENING_SCALE) as u8;
+                        c.g = (c.g as f32 * DARKENING_SCALE) as u8;
+                        c.b = (c.b as f32 * DARKENING_SCALE) as u8;
+
+                        c
+                    };
+
+                    let bc = {
+                        let mut c = self.border_color.clone();
+                        c.r = (c.r as f32 * DARKENING_SCALE) as u8;
+                        c.g = (c.g as f32 * DARKENING_SCALE) as u8;
+                        c.b = (c.b as f32 * DARKENING_SCALE) as u8;
+
+                        c
+                    };
+
+                    self.shape.set_fill_color(&fc);
+                    self.shape.set_outline_color(&bc);
+                } else {
+                    self.shape.set_fill_color(&self.fill_color);
+                    self.shape.set_outline_color(&self.border_color);
+                }
             }
 
             _ => {}

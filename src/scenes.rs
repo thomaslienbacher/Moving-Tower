@@ -25,12 +25,12 @@ impl<'a> MenuScene<'a> {
     pub fn new(font: &'a Font) -> MenuScene<'a> {
         let pb = UiButton::new(&font)
             .size(100, 100, 200, 50)
-            .color(&Color::WHITE)
-            .border_color(&Color::BLACK)
+            .color(Color::WHITE)
+            .border_color(Color::BLACK)
             .border_thickness(3.0)
             .text("PLAY")
             .char_size(32)
-            .text_color(&Color::BLACK)
+            .text_color(Color::BLACK)
             .pack();
 
 
