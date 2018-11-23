@@ -3,13 +3,15 @@ use sfml::graphics::*;
 use utils::get_path;
 
 pub struct AssetManager {
+    res_path: String,
     fonts: HashMap<String, Font>,
     textures: HashMap<String, Texture>,
 }
 
 impl AssetManager {
-    pub fn new() -> AssetManager {
+    pub fn new(res_path: &str) -> AssetManager {
         AssetManager {
+            res_path: res_path.to_string(),
             fonts: HashMap::new(),
             textures: HashMap::new(),
         }
@@ -17,10 +19,11 @@ impl AssetManager {
 
     pub fn load_font(&mut self, font: &str) {
         let f = {
-            if let Some(f) = Font::from_file(get_path(font).as_str()) {
+            let path = get_path((self.res_path.clone() + font).as_str());
+            if let Some(f) = Font::from_file(path.as_str()) {
                 f
             } else {
-                panic!("Couldn't load font: {}", font);
+                panic!("Couldn't load font: {}", path);
             }
         };
 
@@ -29,10 +32,13 @@ impl AssetManager {
 
     pub fn load_texture(&mut self, texture: &str) {
         let t = {
-            if let Some(t) = Texture::from_file(get_path(texture).as_str()) {
+            let path = get_path((self.res_path.clone() + texture).as_str());
+            if let Some(mut t) = Texture::from_file(path.as_str()) {
+                t.set_smooth(true);
+
                 t
             } else {
-                panic!("Couldn't load texture: {}", texture);
+                panic!("Couldn't load texture: {}", path);
             }
         };
 
@@ -51,7 +57,7 @@ impl AssetManager {
         if let Some(t) = self.textures.get(texture) {
             return t;
         } else {
-            panic!("Font not loaded: {}", texture);
+            panic!("Texture not loaded: {}", texture);
         }
     }
 }

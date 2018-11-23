@@ -27,7 +27,7 @@ pub struct MenuScene<'a> {
 
 impl<'a> MenuScene<'a> {
     pub fn new(am: &'a AssetManager) -> MenuScene<'a> {
-        let play_button = UiButton::new(am.get_font("resources/consolas.ttf"))
+        let play_button = UiButton::new(am.get_font("consolas.ttf"))
             .bounds(WIN_WIDTH / 2.0 - 200.0, WIN_HEIGHT / 2.0, 400.0, 70.0)
             .color(Color::WHITE)
             .border_color(Color::BLACK)
@@ -37,7 +37,7 @@ impl<'a> MenuScene<'a> {
             .text_color(Color::BLACK)
             .pack();
 
-        let exit_button = UiButton::new(am.get_font("resources/consolas.ttf"))
+        let exit_button = UiButton::new(am.get_font("consolas.ttf"))
             .bounds(WIN_WIDTH / 2.0 - 200.0, WIN_HEIGHT / 2.0 + 120.0, 400.0, 70.0)
             .color(Color::WHITE)
             .border_color(Color::BLACK)
@@ -76,22 +76,30 @@ impl<'a> Scene for MenuScene<'a> {
     }
 }
 
-pub struct GameScene {}
+use actors::*;
 
-impl GameScene {
-    pub fn new() -> GameScene {
-        GameScene {}
+pub struct GameScene<'a> {
+    tower: Tower<'a>,
+}
+
+impl<'a> GameScene<'a> {
+    pub fn new(am: &'a AssetManager) -> GameScene<'a> {
+        GameScene { tower: Tower::new(am) }
     }
 }
 
-impl Scene for GameScene {
+impl<'a> Scene for GameScene<'a> {
     fn update(&mut self, d: f32) -> Option<State> {
-        println!("game: {}", d);
+        self.tower.update(d);
 
         None
     }
 
-    fn draw(&self, win: &mut RenderWindow) {}
+    fn draw(&self, win: &mut RenderWindow) {
+        self.tower.draw(win);
+    }
 
-    fn events(&mut self, evt: Event) {}
+    fn events(&mut self, evt: Event) {
+        self.tower.events(evt);
+    }
 }

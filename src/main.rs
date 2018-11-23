@@ -28,8 +28,21 @@ fn main() {
 
     window.set_framerate_limit(60);
 
-    let mut asset_manager = AssetManager::new();
-    asset_manager.load_font("resources/consolas.ttf");
+    let icon = {
+        let path = get_path("resources/icon.png");
+        if let Some(t) = Image::from_file(path.as_str()) {
+            t
+        } else {
+            panic!("Couldn't load icon: {}", path);
+        }
+    };
+
+    window.set_icon(icon.size().x, icon.size().y, icon.pixel_data());
+
+
+    let mut asset_manager = AssetManager::new("resources/");
+    asset_manager.load_font("consolas.ttf");
+    asset_manager.load_texture("tower.png");
 
     let mut clock = Clock::default();
     let mut curscene: Box<Scene> = Box::new(MenuScene::new(&asset_manager)) as Box<Scene>;
@@ -43,7 +56,7 @@ fn main() {
                     curscene = Box::new(MenuScene::new(&asset_manager)) as Box<Scene>;
                 }
                 State::Game => {
-                    curscene = Box::new(GameScene::new()) as Box<Scene>;
+                    curscene = Box::new(GameScene::new(&asset_manager)) as Box<Scene>;
                 }
                 State::Exit => {
                     window.close()
