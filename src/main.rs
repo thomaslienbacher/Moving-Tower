@@ -3,6 +3,8 @@ extern crate sfml;
 mod utils;
 mod scenes;
 mod ui;
+mod assets;
+mod actors;
 
 use sfml::graphics::*;
 use sfml::system::*;
@@ -10,6 +12,7 @@ use sfml::window::*;
 use scenes::*;
 use utils::get_path;
 use std::boxed::Box;
+use assets::AssetManager;
 
 const WIN_SIZE: (u32, u32) = (1000, 600);
 const WIN_WIDTH: f32 = WIN_SIZE.0 as f32;
@@ -25,16 +28,11 @@ fn main() {
 
     window.set_framerate_limit(60);
 
-    let font = {
-        if let Some(f) = Font::from_file(get_path("resources/consolas.ttf").as_str()) {
-            f
-        } else {
-            panic!("Couldn't load font");
-        }
-    };
+    let mut asset_manager = AssetManager::new();
+    asset_manager.load_font("resources/consolas.ttf");
 
     let mut clock = Clock::default();
-    let mut curscene: Box<Scene> = Box::new(MenuScene::new(&font)) as Box<Scene>;
+    let mut curscene: Box<Scene> = Box::new(MenuScene::new(&asset_manager)) as Box<Scene>;
 
     while window.is_open() {
         let delta = clock.restart().as_seconds();
@@ -42,7 +40,7 @@ fn main() {
         if let Some(s) = curscene.update(delta) {
             match s {
                 State::Menu => {
-                    curscene = Box::new(MenuScene::new(&font)) as Box<Scene>;
+                    curscene = Box::new(MenuScene::new(&asset_manager)) as Box<Scene>;
                 }
                 State::Game => {
                     curscene = Box::new(GameScene::new()) as Box<Scene>;

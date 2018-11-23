@@ -3,6 +3,7 @@ use sfml::window::*;
 use std::option::Option;
 use ui::UiButton;
 use super::{WIN_WIDTH, WIN_HEIGHT};
+use assets::AssetManager;
 
 #[derive(Eq, PartialEq)]
 pub enum State {
@@ -25,8 +26,8 @@ pub struct MenuScene<'a> {
 }
 
 impl<'a> MenuScene<'a> {
-    pub fn new(font: &'a Font) -> MenuScene<'a> {
-        let play_button = UiButton::new(&font)
+    pub fn new(am: &'a AssetManager) -> MenuScene<'a> {
+        let play_button = UiButton::new(am.get_font("resources/consolas.ttf"))
             .bounds(WIN_WIDTH / 2.0 - 200.0, WIN_HEIGHT / 2.0, 400.0, 70.0)
             .color(Color::WHITE)
             .border_color(Color::BLACK)
@@ -36,7 +37,7 @@ impl<'a> MenuScene<'a> {
             .text_color(Color::BLACK)
             .pack();
 
-        let exit_button = UiButton::new(&font)
+        let exit_button = UiButton::new(am.get_font("resources/consolas.ttf"))
             .bounds(WIN_WIDTH / 2.0 - 200.0, WIN_HEIGHT / 2.0 + 120.0, 400.0, 70.0)
             .color(Color::WHITE)
             .border_color(Color::BLACK)
