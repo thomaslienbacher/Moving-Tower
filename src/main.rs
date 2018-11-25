@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 extern crate sfml;
 
 mod utils;
@@ -19,11 +21,14 @@ const WIN_WIDTH: f32 = WIN_SIZE.0 as f32;
 const WIN_HEIGHT: f32 = WIN_SIZE.1 as f32;
 
 fn main() {
+    let mut settings = ContextSettings::default();
+    settings.antialiasing_level = 4;
+
     let mut window = RenderWindow::new(
         VideoMode::new(WIN_SIZE.0, WIN_SIZE.1, 8),
         "Moving Tower",
         Style::CLOSE,
-        &Default::default(),
+        &settings,
     );
 
     window.set_framerate_limit(60);
