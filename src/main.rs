@@ -48,6 +48,7 @@ fn main() {
     let mut asset_manager = AssetManager::new("resources/");
     asset_manager.load_font("consolas.ttf");
     asset_manager.load_texture("tower.png");
+    asset_manager.load_texture("bullet.png");
 
     let mut clock = Clock::default();
     let mut curscene: Box<Scene> = Box::new(MenuScene::new(&asset_manager)) as Box<Scene>;
@@ -72,8 +73,7 @@ fn main() {
         while let Some(ev) = window.poll_event() {
             match ev {
                 Event::Closed => { window.close() }
-                Event::
-                KeyPressed {
+                Event::KeyPressed {
                     code, ..
                 } => {
                     match code {
