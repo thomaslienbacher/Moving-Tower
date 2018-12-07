@@ -45,7 +45,7 @@ fn main() {
     window.set_icon(icon.size().x, icon.size().y, icon.pixel_data());
 
     let mut asset_manager = AssetManager::new("resources/");
-    asset_manager.load_font("consolas.ttf");
+    asset_manager.load_font("font.ttf");
     asset_manager.load_texture("tower.png");
     asset_manager.load_texture("bullet.png");
 

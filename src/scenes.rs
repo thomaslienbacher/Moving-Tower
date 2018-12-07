@@ -4,6 +4,7 @@ use std::option::Option;
 use ui::UiButton;
 use super::{WIN_WIDTH, WIN_HEIGHT};
 use assets::AssetManager;
+use sfml::system::Vector2f;
 
 #[derive(Eq, PartialEq)]
 pub enum State {
@@ -27,7 +28,7 @@ pub struct MenuScene<'a> {
 
 impl<'a> MenuScene<'a> {
     pub fn new(am: &'a AssetManager) -> MenuScene<'a> {
-        let play_button = UiButton::new(am.get_font("consolas.ttf"))
+        let play_button = UiButton::new(am.get_font("font.ttf"))
             .bounds(WIN_WIDTH / 2.0 - 200.0, WIN_HEIGHT / 2.0, 400.0, 70.0)
             .color(Color::WHITE)
             .border_color(Color::BLACK)
@@ -37,7 +38,7 @@ impl<'a> MenuScene<'a> {
             .text_color(Color::BLACK)
             .pack();
 
-        let exit_button = UiButton::new(am.get_font("consolas.ttf"))
+        let exit_button = UiButton::new(am.get_font("font.ttf"))
             .bounds(WIN_WIDTH / 2.0 - 200.0, WIN_HEIGHT / 2.0 + 120.0, 400.0, 70.0)
             .color(Color::WHITE)
             .border_color(Color::BLACK)
@@ -82,13 +83,15 @@ pub struct GameScene<'a> {
     tower: Tower<'a>,
     score_text: Text<'a>,
     score: f32,
+    score_len: usize,
 }
 
 impl<'a> GameScene<'a> {
     pub fn new(am: &'a AssetManager) -> GameScene<'a> {
         let score_text = {
-            let mut t = Text::new("0.0", am.get_font("consolas.ttf"), 10);
+            let mut t = Text::new("0.0", am.get_font("font.ttf"), 24);
             t.set_fill_color(&Color::BLACK);
+            t.set_position(Vector2f::new(WIN_WIDTH / 2.0, 10.0));
 
             t
         };
@@ -97,6 +100,7 @@ impl<'a> GameScene<'a> {
             tower: Tower::new(am),
             score_text,
             score: 0.0,
+            score_len: 0,
         }
     }
 }
@@ -104,9 +108,24 @@ impl<'a> GameScene<'a> {
 impl<'a> Scene for GameScene<'a> {
     fn update(&mut self, d: f32) -> Option<State> {
         self.tower.update(d);
+        self.score += self.tower.num_bullets() as f32 * 4.0 / (self.tower.num_bullets() as f32 / 8.0 + 1.0) * d;
 
-        self.score += self.tower.num_bullets() as f32 * 7.98 * d;
-        self.score_text.set_string(format!("{}", self.score).as_str());
+        let ss = format!("Score: {:.0}", self.score);
+        self.score_text.set_string(ss.as_str());
+
+        if ss.len() != self.score_len {
+            self.score_len = ss.len();
+
+            let p = {
+                let mut v = Vector2f::new(WIN_WIDTH / 2.0, 10.0);
+                v.x -= (self.score_text.local_bounds().width / 2.0).trunc();
+                v.x = v.x.trunc();
+
+                v
+            };
+
+            self.score_text.set_position(p);
+        }
 
         if self.tower.dead {
             return Some(State::Menu);

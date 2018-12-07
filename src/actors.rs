@@ -36,7 +36,7 @@ impl Circle {
     }
 }
 
-const TOWER_INNER: f32 = 90.0;
+const TOWER_INNER: f32 = 100.0;
 const TOWER_OUTER: f32 = 250.0;
 
 pub struct Tower<'a> {
@@ -118,8 +118,7 @@ impl<'a> Actor for Tower<'a> {
             b.update(d);
 
             if b.hitbox.is_colliding(&self.hitbox) {
-                //self.dead = true;
-                //TODO: remove comment
+                self.dead = true;
             }
         }
     }
@@ -162,7 +161,7 @@ impl<'a> Actor for Tower<'a> {
     }
 }
 
-const BULLET_SPEED: f32 = 110.0;
+const BULLET_SPEED: f32 = 85.0;
 
 pub struct Bullet<'a> {
     sprite: Sprite<'a>,
