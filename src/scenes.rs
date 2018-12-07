@@ -80,11 +80,24 @@ use actors::*;
 
 pub struct GameScene<'a> {
     tower: Tower<'a>,
+    score_text: Text<'a>,
+    score: f32,
 }
 
 impl<'a> GameScene<'a> {
     pub fn new(am: &'a AssetManager) -> GameScene<'a> {
-        GameScene { tower: Tower::new(am) }
+        let score_text = {
+            let mut t = Text::new("0.0", am.get_font("consolas.ttf"), 10);
+            t.set_fill_color(&Color::BLACK);
+
+            t
+        };
+
+        GameScene {
+            tower: Tower::new(am),
+            score_text,
+            score: 0.0,
+        }
     }
 }
 
@@ -92,11 +105,19 @@ impl<'a> Scene for GameScene<'a> {
     fn update(&mut self, d: f32) -> Option<State> {
         self.tower.update(d);
 
+        self.score += self.tower.num_bullets() as f32 * 7.98 * d;
+        self.score_text.set_string(format!("{}", self.score).as_str());
+
+        if self.tower.dead {
+            return Some(State::Menu);
+        }
+
         None
     }
 
     fn draw(&self, win: &mut RenderWindow) {
         self.tower.draw(win);
+        win.draw(&self.score_text);
     }
 
     fn events(&mut self, evt: Event) {

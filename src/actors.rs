@@ -13,16 +13,41 @@ pub trait Actor {
     fn events(&mut self, evt: Event);
 }
 
+struct Circle {
+    x: f32,
+    y: f32,
+    radius: f32,
+}
+
+impl Circle {
+    fn new(x: f32, y: f32, radius: f32) -> Circle {
+        Circle { x, y, radius }
+    }
+
+    fn is_colliding(&self, other: &Self) -> bool {
+        let dis = {
+            let x = self.x - other.x;
+            let y = self.y - other.y;
+
+            f32::sqrt(x * x + y * y)
+        };
+
+        dis < (self.radius + other.radius)
+    }
+}
+
 const TOWER_INNER: f32 = 90.0;
 const TOWER_OUTER: f32 = 250.0;
 
 pub struct Tower<'a> {
     sprite: Sprite<'a>,
     teleport_circle: CircleShape<'a>,
+    hitbox: Circle,
     position: Vector2f,
     rotation: f32,
     bullet_sprite: Sprite<'a>,
     bullets: Vec<Bullet<'a>>,
+    pub dead: bool,
 }
 
 impl<'a> Tower<'a> {
@@ -45,7 +70,7 @@ impl<'a> Tower<'a> {
             c.set_outline_thickness(TOWER_OUTER - TOWER_INNER);
             c.set_origin(Vector2f::new(TOWER_INNER, TOWER_INNER));
             c.set_fill_color(&Color::TRANSPARENT);
-            c.set_outline_color(&Color::rgba(255, 255, 255, 80));
+            c.set_outline_color(&Color::rgba(255, 255, 255, 50));
 
             c
         };
@@ -60,15 +85,24 @@ impl<'a> Tower<'a> {
             s
         };
 
+        let hitbox = {
+            Circle::new(position.x, position.y, sprite.texture_rect().width as f32 / 2.0)
+        };
 
         Tower {
             sprite,
             teleport_circle,
+            hitbox,
             position,
             rotation: 0.0,
             bullet_sprite,
             bullets: Vec::new(),
+            dead: false,
         }
+    }
+
+    pub fn num_bullets(&self) -> usize {
+        self.bullets.len()
     }
 }
 
@@ -77,9 +111,16 @@ impl<'a> Actor for Tower<'a> {
         self.sprite.set_rotation(self.rotation);
         self.sprite.set_position(self.position);
         self.teleport_circle.set_position(self.position);
+        self.hitbox.x = self.position.x;
+        self.hitbox.y = self.position.y;
 
         for b in &mut self.bullets {
             b.update(d);
+
+            if b.hitbox.is_colliding(&self.hitbox) {
+                //self.dead = true;
+                //TODO: remove comment
+            }
         }
     }
 
@@ -112,7 +153,6 @@ impl<'a> Actor for Tower<'a> {
                     m
                 }
             }
-            Event::MouseButtonReleased { button: Button::Left, x, y } => {}
             Event::MouseMoved { x, y } => {
                 self.rotation = (y as f32 - self.position.y).atan2(x as f32 - self.position.x).to_degrees();
             }
@@ -122,18 +162,24 @@ impl<'a> Actor for Tower<'a> {
     }
 }
 
-const BULLET_SPEED: f32 = 100.0;
+const BULLET_SPEED: f32 = 110.0;
 
 pub struct Bullet<'a> {
     sprite: Sprite<'a>,
+    hitbox: Circle,
     position: Vector2f,
     rotation: f32,
 }
 
 impl<'a> Bullet<'a> {
     pub fn new(spr: Sprite<'a>, pos: Vector2f, rot: f32) -> Bullet<'a> {
+        let hitbox = {
+            Circle::new(pos.x, pos.y, spr.texture_rect().width as f32 / 2.0)
+        };
+
         let mut b = Bullet {
             sprite: spr,
+            hitbox,
             position: pos,
             rotation: rot,
         };
@@ -159,6 +205,8 @@ impl<'a> Actor for Bullet<'a> {
 
         self.sprite.set_rotation(self.rotation);
         self.sprite.set_position(self.position);
+        self.hitbox.x = self.position.x;
+        self.hitbox.y = self.position.y;
     }
 
     fn draw(&self, win: &mut RenderWindow) {
