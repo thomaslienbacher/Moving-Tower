@@ -50,15 +50,15 @@ fn main() {
     asset_manager.load_texture("bullet.png");
 
     let mut clock = Clock::default();
-    let mut curscene: Box<Scene> = Box::new(MenuScene::new(&asset_manager)) as Box<Scene>;
+    let mut curscene: Box<Scene> = Box::new(MenuScene::new(&asset_manager, None)) as Box<Scene>;
 
     while window.is_open() {
         let delta = clock.restart().as_seconds();
 
         if let Some(s) = curscene.update(delta) {
             match s {
-                State::Menu => {
-                    curscene = Box::new(MenuScene::new(&asset_manager)) as Box<Scene>;
+                State::Menu(hs) => {
+                    curscene = Box::new(MenuScene::new(&asset_manager, hs)) as Box<Scene>;
                 }
                 State::Game => {
                     curscene = Box::new(GameScene::new(&asset_manager)) as Box<Scene>;

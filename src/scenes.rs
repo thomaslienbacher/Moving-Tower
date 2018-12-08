@@ -5,10 +5,12 @@ use ui::UiButton;
 use super::{WIN_WIDTH, WIN_HEIGHT};
 use assets::AssetManager;
 use sfml::system::Vector2f;
+use std::fs::*;
+use std::io::*;
 
-#[derive(Eq, PartialEq)]
+#[derive(PartialEq)]
 pub enum State {
-    Menu,
+    Menu(Option<f32>),
     Game,
     Exit,
 }
@@ -22,12 +24,16 @@ pub trait Scene {
 }
 
 pub struct MenuScene<'a> {
+    title_text: Text<'a>,
+    help_text: Text<'a>,
+    highscore_text: Text<'a>,
     play_button: UiButton<'a>,
     exit_button: UiButton<'a>,
+    highscore: f32,
 }
 
 impl<'a> MenuScene<'a> {
-    pub fn new(am: &'a AssetManager) -> MenuScene<'a> {
+    pub fn new(am: &'a AssetManager, pre_highscore: Option<f32>) -> MenuScene<'a> {
         let play_button = UiButton::new(am.get_font("font.ttf"))
             .bounds(WIN_WIDTH / 2.0 - 200.0, WIN_HEIGHT / 2.0, 400.0, 70.0)
             .color(Color::WHITE)
@@ -48,8 +54,127 @@ impl<'a> MenuScene<'a> {
             .text_color(Color::BLACK)
             .pack();
 
+        let title_text = {
+            let mut t = Text::new("Moving Tower", am.get_font("font.ttf"), 56);
+            t.set_fill_color(&Color::BLACK);
 
-        MenuScene { play_button, exit_button }
+            let p = {
+                let mut v = Vector2f::new(WIN_WIDTH / 2.0, 15.0);
+                v.x -= (t.local_bounds().width / 2.0).trunc();
+                v.x = v.x.trunc();
+
+                v
+            };
+
+            t.set_position(p);
+
+            t
+        };
+
+        let help_text = {
+            let mut t = Text::new("Click to teleport within the ring\nand don't get hit by a bullet", am.get_font("font.ttf"), 19);
+            t.set_fill_color(&Color::BLACK);
+
+            let p = {
+                let mut v = Vector2f::new(WIN_WIDTH / 2.0, 120.0);
+                v.x -= (t.local_bounds().width / 2.0).trunc();
+                v.x = v.x.trunc();
+
+                v
+            };
+
+            t.set_position(p);
+
+            t
+        };
+
+        let mut highscore = load_highscore();
+        match pre_highscore {
+            Some(hs) => {
+                highscore = hs.max(highscore);
+                save_highscore(highscore);
+            }
+
+            _ => {}
+        }
+
+        let highscore_text = {
+            let mut t = Text::new(format!("Highscore: {:.0}", highscore).as_str(), am.get_font("font.ttf"), 19);
+            t.set_fill_color(&Color::BLACK);
+
+            let p = {
+                let mut v = Vector2f::new(WIN_WIDTH / 2.0, 200.0);
+                v.x -= (t.local_bounds().width / 2.0).trunc();
+                v.x = v.x.trunc();
+
+                v
+            };
+
+            t.set_position(p);
+
+            t
+        };
+
+        MenuScene {
+            title_text,
+            help_text,
+            highscore_text,
+            play_button,
+            exit_button,
+            highscore,
+        }
+    }
+}
+
+fn load_highscore() -> f32 {
+    let mut hs: f32 = 0.0;
+
+    match File::open("highscore.txt") {
+        Ok(mut f) => {
+            let mut s = String::new();
+            match f.read_to_string(&mut s) {
+                Ok(_) => {
+                    match s.parse::<f32>() {
+                        Ok(o) => { hs = o }
+                        _ => {}
+                    }
+                }
+
+                _ => {}
+            }
+        }
+
+        _ => {}
+    }
+
+    hs
+}
+
+fn save_highscore(hs: f32) {
+    match OpenOptions::new().write(true).open("highscore.txt") {
+        Ok(mut f) => {
+            f.write_all(format!("{}", hs).as_bytes());
+            f.flush();
+        }
+
+        Err(e) => match e.kind() {
+            ErrorKind::NotFound => {
+                match File::create("highscore.txt") {
+                    Ok(mut f) => {
+                        f.write(format!("{}", hs).as_bytes());
+                        f.flush();
+                    }
+
+                    _ => {
+                        println!("Couldn't save!");
+                    }
+                }
+            }
+
+            _ => {
+                println!("Couldn't save!");
+            }
+        }
     }
 }
 
@@ -60,6 +185,7 @@ impl<'a> Scene for MenuScene<'a> {
         }
 
         if self.exit_button.clicked() {
+            save_highscore(self.highscore);
             return Some(State::Exit);
         }
 
@@ -69,6 +195,9 @@ impl<'a> Scene for MenuScene<'a> {
     fn draw(&self, win: &mut RenderWindow) {
         self.play_button.draw(win);
         self.exit_button.draw(win);
+        win.draw(&self.title_text);
+        win.draw(&self.help_text);
+        win.draw(&self.highscore_text);
     }
 
     fn events(&mut self, evt: Event) {
@@ -89,9 +218,9 @@ pub struct GameScene<'a> {
 impl<'a> GameScene<'a> {
     pub fn new(am: &'a AssetManager) -> GameScene<'a> {
         let score_text = {
-            let mut t = Text::new("0.0", am.get_font("font.ttf"), 24);
+            let mut t = Text::new("0.0", am.get_font("font.ttf"), 20);
             t.set_fill_color(&Color::BLACK);
-            t.set_position(Vector2f::new(WIN_WIDTH / 2.0, 10.0));
+            t.set_position(Vector2f::new(WIN_WIDTH / 2.0, 5.0));
 
             t
         };
@@ -117,7 +246,7 @@ impl<'a> Scene for GameScene<'a> {
             self.score_len = ss.len();
 
             let p = {
-                let mut v = Vector2f::new(WIN_WIDTH / 2.0, 10.0);
+                let mut v = Vector2f::new(WIN_WIDTH / 2.0, 5.0);
                 v.x -= (self.score_text.local_bounds().width / 2.0).trunc();
                 v.x = v.x.trunc();
 
@@ -128,7 +257,7 @@ impl<'a> Scene for GameScene<'a> {
         }
 
         if self.tower.dead {
-            return Some(State::Menu);
+            return Some(State::Menu(Some(self.score)));
         }
 
         None
