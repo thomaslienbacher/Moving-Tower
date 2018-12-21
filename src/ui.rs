@@ -76,7 +76,7 @@ impl<'a> UiButton<'a> {
 
             let y = self.rect.top
                 + self.rect.height / 2.0
-                - self.text.global_bounds().height;//TODO: should we divide by 2 ??
+                - self.text.global_bounds().height;//TODO: divide by 2 ??
 
             Vector2f::new(x.round(), y.round())
         };
