@@ -1,8 +1,8 @@
 [package]
 name = "moving-tower"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Thomas Lienbacher <lienbacher.tom@gmail.com>"]
-
+edition = "2018"
 
 [dependencies]
 sfml = "0.14.0"

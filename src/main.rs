@@ -2,19 +2,21 @@
 
 extern crate sfml;
 
+use std::boxed::Box;
+
+use sfml::graphics::*;
+use sfml::system::*;
+use sfml::window::*;
+
+use crate::assets::AssetManager;
+use crate::scenes::*;
+use crate::utils::get_path;
+
 mod utils;
 mod scenes;
 mod ui;
 mod assets;
 mod actors;
-
-use sfml::graphics::*;
-use sfml::system::*;
-use sfml::window::*;
-use scenes::*;
-use utils::get_path;
-use std::boxed::Box;
-use assets::AssetManager;
 
 const WIN_SIZE: (u32, u32) = (1000, 600);
 const WIN_WIDTH: f32 = WIN_SIZE.0 as f32;

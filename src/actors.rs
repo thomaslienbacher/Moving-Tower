@@ -1,9 +1,11 @@
 use sfml::graphics::*;
-use sfml::window::*;
 use sfml::system::Vector2f;
-use super::{WIN_WIDTH, WIN_HEIGHT};
-use AssetManager;
+use sfml::window::*;
 use sfml::window::mouse::Button;
+
+use crate::AssetManager;
+
+use super::{WIN_HEIGHT, WIN_WIDTH};
 
 pub trait Actor {
     fn update(&mut self, d: f32);
@@ -212,7 +214,7 @@ impl<'a> Actor for Bullet<'a> {
         win.draw(&self.sprite);
     }
 
-    fn events(&mut self, evt: Event) {
+    fn events(&mut self, _evt: Event) {
         unimplemented!();
     }
 }

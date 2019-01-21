@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use sfml::graphics::*;
-use utils::get_path;
+use crate::utils::get_path;
 
 pub struct AssetManager {
     res_path: String,

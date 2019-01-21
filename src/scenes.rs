@@ -1,12 +1,16 @@
-use sfml::graphics::*;
-use sfml::window::*;
-use std::option::Option;
-use ui::UiButton;
-use super::{WIN_WIDTH, WIN_HEIGHT};
-use assets::AssetManager;
-use sfml::system::Vector2f;
 use std::fs::*;
 use std::io::*;
+use std::option::Option;
+
+use sfml::graphics::*;
+use sfml::system::Vector2f;
+use sfml::window::*;
+
+use crate::actors::*;
+use crate::assets::AssetManager;
+use crate::ui::UiButton;
+
+use super::{WIN_HEIGHT, WIN_WIDTH};
 
 #[derive(PartialEq)]
 pub enum State {
@@ -205,8 +209,6 @@ impl<'a> Scene for MenuScene<'a> {
         self.exit_button.event(evt);
     }
 }
-
-use actors::*;
 
 pub struct GameScene<'a> {
     tower: Tower<'a>,
